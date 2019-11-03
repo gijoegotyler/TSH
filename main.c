@@ -18,17 +18,21 @@ int tsh_pwd(char **args);
 int tsh_mkdir(char **args);
 int tsh_touch(char **args);
 int tsh_rm(char **args);
+int tsh_whoami(char **args);
+int tsh_rmdir(char **args);
 
 char *builtin_str[] = {
 	"cd",
 	"help",
 	"ls",
-	"echo - wip",
+	"echo",
 	"cat",
 	"pwd",
 	"mkdir",
 	"touch",
 	"rm",
+	"whoami",
+	"rmdir",
 	"exit"
 };
 
@@ -42,6 +46,8 @@ int (*builtin_func[]) (char **) = {
 	&tsh_mkdir,
 	&tsh_touch,
 	&tsh_rm,
+	&tsh_whoami,
+	&tsh_rmdir,
 	&tsh_exit
 };
 
@@ -100,8 +106,9 @@ int tsh_ls(char **args)
 int tsh_echo(char **args)
 {
 	int i;
-//	int arraylen = (int) ( sizeof(args) );
+	int arraylen = (int) ( sizeof(args) / sizeof(char *) );
 
+	printf("%d\n", arraylen);
 //	printf("%d\n", arraylen);
 //	printf("%d\n", (int) ( sizeof(args[1]) ));
 	//for (i = 1; i < arraylen; i++) {
@@ -111,7 +118,7 @@ int tsh_echo(char **args)
 
 //	printf("\n");
 
-	printf("this command is currently broken");
+	printf("this command is currently broken\n");
 
 	return 1;
 }
@@ -163,6 +170,17 @@ int tsh_mkdir(char **args)
 	return 1;
 }
 
+int tsh_rmdir(char **args)
+{
+	struct stat st = {0};
+
+	if (stat(args[1], &st) == 0) {
+		rmdir(args[1]);
+	}
+
+	return 1;
+}
+
 int tsh_touch(char **args)
 {
 	FILE *fp;
@@ -184,6 +202,13 @@ int tsh_rm(char **args)
 	}
 
 	return 1;
+}
+
+int tsh_whoami(char **args) {
+	char *username;
+	username = (char *) malloc(10*sizeof(char));
+	username = getlogin();
+	printf("%s\n", username);
 }
 
 int tsh_exit(char **args)
@@ -332,11 +357,8 @@ void tsh_loop(void)
 			nofail = false;
 		}
 
-//		if (!nofail) {
-//			printf("> ");
-//		} else {
-			printf("%s@%s: %s$ ", username, hostname, cwd);
-//		}
+		printf("%s@%s:%s$ ", username, hostname, cwd);
+
 		line = tsh_read_line();
 		args = tsh_split_line(line);
 		status = tsh_execute(args);
